@@ -20,6 +20,7 @@ const (
 	xmin, ymin, xmax, ymax = -2, -2, 2, 2
 	width, height          = 1280, 1280
 	maxIterations          = 256 * 3
+	sizeReduction          = 4.0
 )
 
 var (
@@ -128,8 +129,8 @@ func renderImage(newX, newY, newSize float64) {
 	size = newSize
 	pixelRatioW := size / width
 	pixelRatioH := size / height
-	xCoord := tranlate(newX, 0, width, 0, width*pixelRatioW) * 2
-	yCoord := tranlate(newY, 0, width, 0, width*pixelRatioH) * 2
+	xCoord := tranlate(newX, 0, width, 0, width*pixelRatioW) * sizeReduction
+	yCoord := tranlate(newY, 0, width, 0, width*pixelRatioH) * sizeReduction
 	xc += xCoord
 	yc += yCoord
 
@@ -164,15 +165,22 @@ func renderImage(newX, newY, newSize float64) {
 	log.Println("Done")
 }
 
+func reset() {
+	xc = -0.5
+	yc = 0.0
+	size = 3.0
+	renderImage(0.0, 0.0, size)
+}
+
 func handleClick(event *sdl.MouseButtonEvent) {
 	if event.Button == sdl.BUTTON_LEFT && event.Type == sdl.MOUSEBUTTONUP {
 		// size = size / 2
 		newX := float64(event.X) - width/2
 		newY := float64(event.Y) - height/2
-		renderImage(newX, newY, size/2)
+		renderImage(newX, newY, size/sizeReduction)
 	}
 	if event.Button == sdl.BUTTON_RIGHT && event.Type == sdl.MOUSEBUTTONUP {
-		renderImage(0.0, 0.0, 8.0)
+		reset()
 	}
 
 }
@@ -181,6 +189,7 @@ func loadImage(renderer *sdl.Renderer) {
 	img, err := img.Load("/tmp/img.png")
 	must(err)
 	defer img.Free()
+
 	texture, err := renderer.CreateTextureFromSurface(img)
 	must(err)
 	defer texture.Destroy()
@@ -202,10 +211,7 @@ func main() {
 	must(err)
 	defer window.Destroy()
 
-	surface, err := window.GetSurface()
-	must(err)
-	surface.FillRect(nil, 0)
-	renderImage(0.0, 0.0, size)
+	reset()
 	loadImage(renderer)
 
 	running := true

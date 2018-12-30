@@ -9,3 +9,8 @@ go get -u github.com/Gonzih/mandelbrot-go
 ```
 mandelbrot-go
 ```
+
+![](https://raw.githubusercontent.com/Gonzih/mandelbrot-go/master/img/demo1.png)
+![](https://raw.githubusercontent.com/Gonzih/mandelbrot-go/master/img/demo2.png)
+![](https://raw.githubusercontent.com/Gonzih/mandelbrot-go/master/img/demo3.png)
+![](https://raw.githubusercontent.com/Gonzih/mandelbrot-go/master/img/demo4.png)
