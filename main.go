@@ -41,23 +41,23 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 	palette = make([]color.RGBA, maxIterations+1)
 	for i := 0; i <= maxIterations; i++ {
-		g := 0
 		r := 0
+		g := 0
 		b := 0
 		switch {
 		case i <= 255:
 			{
-				g = i
+				r = i
 			}
 		case i <= 510 && i > 255:
 			{
-				g = 255
-				r = i - 255
+				r = 255
+				g = i - 255
 			}
 		case i <= 765 && i > 510:
 			{
-				g = 255
 				r = 255
+				g = 255
 				b = i - 510
 			}
 		}
