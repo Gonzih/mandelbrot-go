@@ -17,3 +17,4 @@ mandelbrot-go
 ![](https://raw.githubusercontent.com/Gonzih/mandelbrot-go/master/img/demo5.png)
 ![](https://raw.githubusercontent.com/Gonzih/mandelbrot-go/master/img/demo6.png)
 ![](https://raw.githubusercontent.com/Gonzih/mandelbrot-go/master/img/demo7.png)
+![](https://raw.githubusercontent.com/Gonzih/mandelbrot-go/master/img/demo8.png)
