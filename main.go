@@ -58,7 +58,7 @@ func init() {
 			{
 				r = 255
 				g = 255
-				b = i - 510
+				b = i - 255*2
 			}
 		}
 
@@ -96,27 +96,38 @@ func newImg() (*image.RGBA, chan imgMsg) {
 
 	imgCh := make(chan imgMsg, 0)
 
-	go func(imgCh chan imgMsg) {
-		for {
-			select {
-			case msg, ok := <-imgCh:
-				if !ok {
-					break
+	for i := 0; i < 8; i++ {
+		go func(imgCh chan imgMsg, i int) {
+			c := 0
+			running := true
+
+			for running {
+				select {
+				case msg, ok := <-imgCh:
+					if !ok {
+						running = false
+						break
+					}
+					c++
+					img.Set(msg.x, msg.y, msg.color)
 				}
-				img.Set(msg.x, msg.y, msg.color)
 			}
-		}
-	}(imgCh)
+
+			log.Printf("Image set thread #%d processed %d messages", i, c)
+		}(imgCh, i)
+	}
 
 	return img, imgCh
 }
 
 func saveImg(img image.Image) {
+	log.Println("Saving image")
 	buf := bytes.NewBuffer([]byte{})
 	err := png.Encode(buf, img)
 	must(err)
 	err = ioutil.WriteFile("/tmp/img.png", buf.Bytes(), 0644)
 	must(err)
+	log.Println("Image saved")
 }
 
 func tranlate(x, inMin, inMax, outMin, outMax float64) float64 {
@@ -133,6 +144,8 @@ func renderImage(newX, newY, newSize float64) {
 	yCoord := tranlate(newY, 0, width, 0, width*pixelRatioH) * sizeReduction
 	xc += xCoord
 	yc += yCoord
+	xcMinusHalfSize := xc - size/2
+	ycMinusHalfSize := yc - size/2
 
 	log.Printf("Coordinates input: %f,%f", newX, newY)
 	log.Printf("Mapped input: %f,%f", xCoord, yCoord)
@@ -147,8 +160,8 @@ func renderImage(newX, newY, newSize float64) {
 		go func(px int) {
 			defer wg.Done()
 			for py := 0; py < width; py++ {
-				x0 := xc - size/2 + float64(px)*pixelRatioW
-				y0 := yc - size/2 + float64(py)*pixelRatioH
+				x0 := xcMinusHalfSize + float64(px)*pixelRatioW
+				y0 := ycMinusHalfSize + float64(py)*pixelRatioH
 				coord := complex(x0, y0)
 				f := mand(coord)
 				clr := palette[int(f)]
@@ -186,6 +199,7 @@ func handleClick(event *sdl.MouseButtonEvent) {
 }
 
 func loadImage(renderer *sdl.Renderer) {
+	log.Println("Loading image")
 	img, err := img.Load("/tmp/img.png")
 	must(err)
 	defer img.Free()
@@ -196,8 +210,11 @@ func loadImage(renderer *sdl.Renderer) {
 
 	src := sdl.Rect{0, 0, width, height}
 	renderer.Clear()
+	renderer.SetDrawColor(0, 0, 0, 255)
+	renderer.FillRect(&src)
 	renderer.Copy(texture, &src, &src)
 	renderer.Present()
+	log.Println("Image loaded")
 }
 
 func main() {
@@ -213,6 +230,7 @@ func main() {
 
 	reset()
 	loadImage(renderer)
+	sdl.Delay(2000)
 
 	running := true
 	for running {
@@ -222,8 +240,9 @@ func main() {
 				e, _ := event.(*sdl.MouseButtonEvent)
 				handleClick(e)
 				loadImage(renderer)
+				sdl.Delay(2000)
 			case *sdl.QuitEvent:
-				println("Quit")
+				log.Println("Quit")
 				running = false
 				break
 			}
